@@ -27,10 +27,13 @@ public class ConsoleConstants {
 
   public static final String INPUT_ONTOLOGY_B = "ob";
 
+  public static final String INPUT_ONTOLOGY_A_IRI = "oa-iri";
+
+  public static final String INPUT_ONTOLOGY_B_IRI = "ob-iri";
+
   public static final String DIFF = "d";
 
   public static final String STATISTIC = "s";
 
-
-    public static final String OUTPUT_FILE = "o";
+  public static final String OUTPUT_FILE = "o";
 }

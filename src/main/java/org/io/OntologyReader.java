@@ -19,10 +19,7 @@
 package org.io;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyLoaderConfiguration;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.*;
 
 import java.io.File;
 
@@ -42,4 +39,8 @@ public class OntologyReader {
         return manager.loadOntologyFromOntologyDocument(f);
     }
 
+    public OWLOntology loadOntology(IRI iri) throws OWLOntologyCreationException {
+        manager = OWLManager.createOWLOntologyManager();
+        return manager.loadOntology(iri);
+    }
 }
