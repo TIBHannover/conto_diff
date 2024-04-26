@@ -25,6 +25,7 @@ import org.webdifftool.client.model.changes.Change;
 import org.webdifftool.client.model.changes.basic.*;
 import org.webdifftool.client.model.changes.complex.*;
 import org.webdifftool.server.OWLManager;
+import org.webdifftool.server.OWLManagerCustom;
 import org.webdifftool.server.StopWords;
 
 import java.util.*;
@@ -37,7 +38,7 @@ public class DiffComputation {
         //Globals.addPrefix(prefix);
         DiffExecutor.getSingleton().setupRepository();
 
-        OWLManager owl = new OWLManager();
+        OWLManagerCustom owl = new OWLManagerCustom();
 
         System.out.println("Loading ontology versions");
         owl.parseAndIntegrateChanges(first, second);
