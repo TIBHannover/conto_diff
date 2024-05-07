@@ -33,12 +33,16 @@ import org.webdifftool.server.OWLManagerCustom;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.DoubleToIntFunction;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ContoDiffMain {
 
@@ -46,23 +50,26 @@ public class ContoDiffMain {
 
     static {
         options = new Options();
-        Option inputFirstOnt = new Option(ConsoleConstants.INPUT_ONTOLOGY_A,
-                "first ontology", true, "path of the first ontology");
-        Option inputFirstOntIRI = new Option("iria",
-                ConsoleConstants.INPUT_ONTOLOGY_A_IRI, true, "IRI of the first ontology");
-        Option inputSecondOnt = new Option(ConsoleConstants.INPUT_ONTOLOGY_B,
-                "path of the second ontology", true, "second ontology");
-        Option inputSecondOntIRI = new Option("irib",
-                ConsoleConstants.INPUT_ONTOLOGY_B_IRI, true, "IRI of the second ontology");
+        Option inputFirstOnt = new Option(ConsoleConstants.INPUT_ONTOLOGY_A, "first ontology", true, "path of the first ontology");
+
+        Option inputFirstOntIri = new Option("iria", ConsoleConstants.INPUT_ONTOLOGY_A_IRI, true, "IRI of the first ontology");
+
+        Option inputSecondOnt = new Option(ConsoleConstants.INPUT_ONTOLOGY_B, "path of the second ontology", true, "second ontology");
+
+        Option inputSecondOntIri = new Option("irib", ConsoleConstants.INPUT_ONTOLOGY_B_IRI, true, "IRI of the second ontology");
+
+        Option baseOntIri = new Option("base", ConsoleConstants.BASE_ONTOLOGY_IRI, true, "Base Ontology IRI from which semantic diffs are calculated");
+
         Option outputFile =  new Option(ConsoleConstants.OUTPUT_FILE, "file with the compact diff representation", true,
                 "output file");
         Option diff = new Option(ConsoleConstants.DIFF, "compute Diff", false,
                 "compute diff");
 
         options.addOption(inputFirstOnt);
-        options.addOption(inputFirstOntIRI);
+        options.addOption(inputFirstOntIri);
         options.addOption(inputSecondOnt);
-        options.addOption(inputSecondOntIRI);
+        options.addOption(inputSecondOntIri);
+        options.addOption(baseOntIri);
         options.addOption(outputFile);
         options.addOption(diff);
     }
@@ -74,15 +81,18 @@ public class ContoDiffMain {
         OWLOntology firstOnt = null;
         OWLOntology secontOnt = null;
         FileWriter output = null;
+        String firstIri = "", secondIri = "", ontologyIri = "";
         try {
             System.out.println(cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_A));
             System.out.println(cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_B));
 
             String first = cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_A);
-            String firstIri = cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_A_IRI);
+            firstIri = cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_A_IRI);
 
             String second = cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_B);
-            String secondIri = cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_B_IRI);
+            secondIri = cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_B_IRI);
+
+            ontologyIri = cmd.getOptionValue(ConsoleConstants.BASE_ONTOLOGY_IRI);
 
             firstOnt = setOntology(reader, first, firstIri);
             secontOnt = setOntology(reader, second, secondIri);
@@ -103,7 +113,7 @@ public class ContoDiffMain {
             DiffComputation computation = new DiffComputation();
             DiffEvolutionMapping mapping = computation.computeDiff(firstOnt, secontOnt);
 
-            Map<String, String> prefixes = OWLManagerCustom.getAllPrefixes(firstOnt);
+            Map<String, String> prefixes = OWLManagerCustom.getAllPrefixes(firstOnt, secontOnt);
             StringBuilder strPrefixBuilder = new StringBuilder();
 
             strPrefixBuilder.append("\n");
@@ -112,25 +122,45 @@ public class ContoDiffMain {
             SemanticDiff sdiff = new SemanticDiff();
 
             for (Map.Entry<String, Change> change : mapping.allChanges.entrySet()) {
-                OWLManagerCustom.getProvDmMap(prefixes, header, change.getKey() + change.getValue().getSimpleWordRepresentation(), sdiff.getProvDMs());
+                OWLManagerCustom.getProvDmMap(change.getKey(), change.getValue().getSimpleWordRepresentation().trim(), sdiff.getProvDMs());
             }
 
             OWLManagerCustom.generateLocationMap(sdiff.getProvDMs(), sdiff.getLocations());
 
 
-            String ontologyUri = "https://raw.githubusercontent.com/OpenEnergyPlatform/ontology/master/src/ontology/imports/iao-extracted.owl";
-            sdiff.setBaseEntity(OWLManagerCustom.generateBaseEntity(ontologyUri));
+            sdiff.setBaseEntity(OWLManagerCustom.generateBaseEntity(ontologyIri));
 
-            OWLManagerCustom.generateActivityMap(sdiff.getLocations(), sdiff.getActivities());
+            String[] partsSecond = secondIri.split("/");
+            String secondSha1 = "";
+            Pattern patternSecond = Pattern.compile("[0-9a-f]{40}");
+            for (String part : partsSecond) {
+                Matcher matcher = patternSecond.matcher(part);
+                if (matcher.matches()) {
+                    secondSha1 = part;
+                    break;
+                }
+            }
 
-            String[] URIs = new String[]{"https://raw.githubusercontent.com/OpenEnergyPlatform/ontology/42c6448efab195d6e354b00ca0db71fa8910c0a8/src/ontology/imports/iao-extracted.owl",
-                                            "https://raw.githubusercontent.com/OpenEnergyPlatform/ontology/9d784dbb4810548940b76aff4a8790d6ad379bf6/src/ontology/imports/iao-extracted.owl"};
+            OWLManagerCustom.generateActivityMap(sdiff.getLocations(), sdiff.getActivities(), secondSha1);
+
+            String[] URIs = new String[]{firstIri, secondIri};
             for (String rawUri : URIs) {
                 OWLManagerCustom.generateSourceEntiry(rawUri, sdiff.getSourceEntities());
             }
 
             sdiff.setSoftwareAgent(OWLManagerCustom.generateSoftwareAgent());
-            OWLManagerCustom.generateSDiffEntity(sdiff.getSourceEntities(), sdiff.getSdiffEntities(), sdiff.getBaseEntity());
+
+            String[] parts = firstIri.split("/");
+            String firstSha1 = "";
+            Pattern pattern = Pattern.compile("[0-9a-f]{40}");
+            for (String part : parts) {
+                Matcher matcher = pattern.matcher(part);
+                if (matcher.matches()) {
+                    firstSha1 = part;
+                    break;
+                }
+            }
+            OWLManagerCustom.generateSDiffEntity(sdiff.getSourceEntities(), firstSha1, sdiff.getSdiffEntities(), sdiff.getBaseEntity());
 
             String filePath = "semantic_diff.json";
 
@@ -158,10 +188,14 @@ public class ContoDiffMain {
             }
             sb.append(sdiff.getSoftwareAgent());
 
-            Files.write(Paths.get("sdiff.ttl"), sb.toString().getBytes());
             if (output != null){
-                output.write(mapping.getFulltextOfCompactDiff());
+                output.write(sb.toString());
             }
+            StringBuilder diffs = new StringBuilder();
+            for (String s : sdiff.getProvDMs().values()) {
+                diffs.append(s);
+            }
+            Files.write(Paths.get("all_diffs.nq"), diffs.toString().getBytes(StandardCharsets.UTF_8));
             output.close();
 //        }
 

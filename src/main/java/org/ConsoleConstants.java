@@ -31,6 +31,8 @@ public class ConsoleConstants {
 
   public static final String INPUT_ONTOLOGY_B_IRI = "ob-iri";
 
+  public static final String BASE_ONTOLOGY_IRI = "base-iri";
+
   public static final String DIFF = "d";
 
   public static final String STATISTIC = "s";
