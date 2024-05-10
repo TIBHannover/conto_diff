@@ -26,6 +26,7 @@ import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.webdifftool.client.model.DiffEvolutionMapping;
+import org.webdifftool.client.model.GitInfoParams;
 import org.webdifftool.client.model.SemanticDiff;
 import org.webdifftool.client.model.changes.Change;
 import org.webdifftool.server.OWLManagerCustom;
@@ -37,6 +38,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +67,12 @@ public class ContoDiffMain {
                 "output file");
         Option diff = new Option(ConsoleConstants.DIFF, "compute Diff", false,
                 "compute diff");
+        Option gitInfo = Option.builder(ConsoleConstants.GIT_INFO)
+                        .hasArgs()
+                        .valueSeparator('\u001f')
+                        .argName("PARAMS")
+                        .desc("Params for the git info")
+                        .build();
 
         options.addOption(inputFirstOnt);
         options.addOption(inputFirstOntIri);
@@ -72,6 +81,7 @@ public class ContoDiffMain {
         options.addOption(baseOntIri);
         options.addOption(outputFile);
         options.addOption(diff);
+        options.addOption(gitInfo);
     }
 
     public static void main(String[] args) throws IOException {
@@ -82,6 +92,7 @@ public class ContoDiffMain {
         OWLOntology secontOnt = null;
         FileWriter output = null;
         String firstIri = "", secondIri = "", ontologyIri = "";
+        GitInfoParams gitInfoParams = null;
         try {
             System.out.println(cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_A));
             System.out.println(cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_B));
@@ -97,6 +108,13 @@ public class ContoDiffMain {
             firstOnt = setOntology(reader, first, firstIri);
             secontOnt = setOntology(reader, second, secondIri);
             output = new FileWriter(cmd.getOptionValue(ConsoleConstants.OUTPUT_FILE));
+
+            String[] values = cmd.getOptionValues(ConsoleConstants.GIT_INFO);
+
+            gitInfoParams = new GitInfoParams(values[0], values[1],
+                                                values[2], values[3],
+                                                values[4], values[5]);
+
         } catch (NullPointerException e) {
 
             System.err.println("first or second ontology not found");
@@ -160,7 +178,7 @@ public class ContoDiffMain {
                     break;
                 }
             }
-            OWLManagerCustom.generateSDiffEntity(sdiff.getSourceEntities(), firstSha1, sdiff.getSdiffEntities(), sdiff.getBaseEntity());
+            OWLManagerCustom.generateSDiffEntity(sdiff.getSourceEntities(), firstSha1, secondSha1, sdiff.getSdiffEntities(), sdiff.getBaseEntity(), gitInfoParams);
 
             String filePath = "semantic_diff.json";
 

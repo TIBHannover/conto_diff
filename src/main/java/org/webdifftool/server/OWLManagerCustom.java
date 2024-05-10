@@ -35,6 +35,7 @@ import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.search.EntitySearcher;
+import org.webdifftool.client.model.GitInfoParams;
 import org.webdifftool.client.model.SemanticDiff;
 
 import java.io.*;
@@ -847,9 +848,76 @@ public class OWLManagerCustom {
 	public static void generateActivityMap(Map<String, String> locations, Map<String, String> activities, String secondSha1) {
 		for (Map.Entry<String, String> entry : locations.entrySet()) {
 			String key = entry.getKey().substring(0, entry.getKey().lastIndexOf("_"));
+			String operationType = "";
+			if (key.endsWith("delC")) {
+				operationType = "prov:delConcept <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("addC")) {
+				operationType = "prov:addConcept <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("mapC")) {
+				operationType = "prov:mapConcept <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("addAttribute")) {
+				operationType = "prov:addAttribute <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("delA")) {
+				operationType = "prov:delAttribute <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("mapA")) {
+				operationType = "prov:mapAttribute <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("addR")) {
+				operationType = "prov:addRelationship <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("delR")) {
+				operationType = "prov:delRelationship <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("mapR")) {
+				operationType = "prov:mapRelationship <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("addLeaf")) {
+				operationType = "prov:addLeaf <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("delLeaf")) {
+				operationType = "prov:delLeaf <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("move")) {
+				operationType = "prov:move <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("addInner")) {
+				operationType = "prov:addInner <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("addSubGraph")) {
+				operationType = "prov:addSubGraph <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("delInner")) {
+				operationType = "prov:delInner <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("merge")) {
+				operationType = "prov:merge <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("split")) {
+				operationType = "prov:split <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("substitute")) {
+				operationType = "prov:substitute <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("chgAttValue")) {
+				operationType = "prov:chgAttValue <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("toObsolete")) {
+				operationType = "prov:toObsolete <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else if (key.endsWith("revokeObsolete")) {
+				operationType = "prov:revokeObsolete <https://example.org/history/" +  secondSha1 + "> ;\n\t";
+			}
+			else {
+				operationType = "Operation type was not found. Check applied rules\n\t";
+			}
 			String value = ":" + key + " rdf:type owl:NamedIndividual ,\n\t " +
 					"prov:Activity ;\n\t" +
-					"prov:addConcept <https://example.org/history/" +  secondSha1 + "> ;\n\t" +
+					operationType +
 					"prov:atLocation :" + entry.getKey() + ";\n\t" +
 					"prov:wasAssociatedWith :contodiff ;\n\t" +
 					" rdfs:label \"" + key + "\" ;\n\t" +
@@ -913,7 +981,8 @@ public class OWLManagerCustom {
 		return baseEntity.toString();
 	}
 
-	public static void generateSDiffEntity(Map<String, String> sourceEntities, String firstSha1, Map<String, String> sdiffEntities, String baseEntity) {
+	public static void generateSDiffEntity(Map<String, String> sourceEntities, String firstSha1, String secondSha1, Map<String, String> sdiffEntities,
+										   String baseEntity, GitInfoParams gitInfoParams) {
 		for (Map.Entry<String, String> entry : sourceEntities.entrySet()) {
 
 			Pattern pattern = Pattern.compile("[0-9a-f]{40}");
@@ -932,19 +1001,22 @@ public class OWLManagerCustom {
 
 			String key = entry.getKey().substring(0, entry.getKey().lastIndexOf("_"));
 
-			String wasRevisionOf = "";
-			if (!sha1.equals(firstSha1)) {
-				wasRevisionOf = "prov:wasRevisionOf " + "<https://example.org/history/" + firstSha1 + ">" + " ; \n\t";
-			}
 			String value = key + "> rdf:type owl:NamedIndividual ,\n\t " +
 					"prov:Entity ;\n\t" +
 					"prov:alternateOf :" + baseEntityLabel + " ;\n\t" +
-					"prov:hadPrimarySource " + entry.getKey() + " ;\n\t" +
-					wasRevisionOf +
- 					"prov:generatedAtTime \"" + generateRandomInstant() + "\"^^xsd:dateTime ;\n\t" +
-					"prov:value \"" + generateRandomString() +  "\" ;\n\t" +
+					"prov:hadPrimarySource " + entry.getKey() + " ;\n\t";
+			if (sha1.equals(firstSha1)) {
+				value += "prov:generatedAtTime \"" + gitInfoParams.getLeftDatetime() + "\"^^xsd:dateTime ;\n\t" +
+					"prov:value \"" + gitInfoParams.getLeftMessage() +  "\" ;\n\t" +
 					"rdfs:label \"" + sha1 + "\" ;\n\t" +
-					"rdfs:dm <https://github.com/OpenEnergyPlatform/ontology/commit/" + sha1 + "> .\n\t";
+					"rdfs:seeAlso <" + gitInfoParams.getLeftCommitUri() + "> .\n\t";
+			} else if (sha1.equals(secondSha1)) {
+				value += "prov:wasRevisionOf " + "<https://example.org/history/" + firstSha1 + ">" + " ; \n\t" +
+						"prov:generatedAtTime \"" + gitInfoParams.getRightDatetime() + "\"^^xsd:dateTime ;\n\t" +
+						"prov:value \"" + gitInfoParams.getRightMessage() +  "\" ;\n\t" +
+						"rdfs:label \"" + sha1 + "\" ;\n\t" +
+						"rdfs:seeAlso <" + gitInfoParams.getRightCommitUri() + "> .\n\t";
+			}
 
 			sdiffEntities.put(key, value);
 		}
