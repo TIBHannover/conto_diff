@@ -3,6 +3,11 @@ package org.webdifftool.client.model;
 import java.time.Instant;
 
 public class GitInfoParams {
+
+    private final String rawUrlLeft;
+
+    private final String rawUrlRight;
+
     private final String leftCommitUri;
 
     private final String rightCommitUri;
@@ -15,7 +20,11 @@ public class GitInfoParams {
 
     private final String rightMessage;
 
-    public GitInfoParams(String leftCommitUri, String rightCommitUri, String leftDatetime, String rightDatetime, String leftMessage, String rightMessage) {
+    public GitInfoParams(String rawUrlLeft, String rawUrlRight, String leftCommitUri,
+                         String rightCommitUri, String leftDatetime,
+                         String rightDatetime, String leftMessage, String rightMessage) {
+        this.rawUrlLeft = rawUrlLeft;
+        this.rawUrlRight = rawUrlRight;
         this.leftCommitUri = leftCommitUri;
         this.rightCommitUri = rightCommitUri;
         this.leftDatetime = leftDatetime;
@@ -24,6 +33,9 @@ public class GitInfoParams {
         this.rightMessage = rightMessage;
     }
 
+    public String getRawUrlLeft() { return rawUrlLeft; }
+
+    public String getRawUrlRight() { return rawUrlRight; }
 
     public String getLeftCommitUri() {
         return leftCommitUri;
@@ -52,7 +64,9 @@ public class GitInfoParams {
     @Override
     public String toString() {
         return "GitInfoParams{" +
-                "leftCommitUri='" + leftCommitUri + '\'' +
+                "rawUrlLeft='" + rawUrlLeft + '\'' +
+                ", rawUrlRight='" + rawUrlRight + '\'' +
+                ", leftCommitUri='" + leftCommitUri + '\'' +
                 ", rightCommitUri='" + rightCommitUri + '\'' +
                 ", leftDatetime='" + leftDatetime + '\'' +
                 ", rightDatetime='" + rightDatetime + '\'' +

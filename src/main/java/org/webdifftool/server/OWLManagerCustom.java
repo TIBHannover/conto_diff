@@ -49,6 +49,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.time.Instant;
 
+import static org.ContoDiffMain.getSha1FromIri;
+
 public class OWLManagerCustom {
 	
 	List<String[]> objectsImport; 
@@ -845,15 +847,7 @@ public class OWLManagerCustom {
 
 	public static void generateSourceEntiry(String ontologyUri, Map<String, String> sourceEntities) {
 		String[] parts = ontologyUri.split("/");
-		String sha1 = "";
-		Pattern pattern = Pattern.compile("[0-9a-f]{40}");
-		for (String part : parts) {
-			Matcher matcher = pattern.matcher(part);
-			if (matcher.matches()) {
-				sha1 = part;
-				break;
-			}
-		}
+		String sha1 = getSha1FromIri(ontologyUri);
 
 		String filename = parts[parts.length - 1];
 		filename = filename.substring(0, filename.lastIndexOf("."));
