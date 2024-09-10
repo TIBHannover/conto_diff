@@ -89,7 +89,7 @@ public class ContoDiffMain {
 
         OntologyReader reader = new OntologyReader();
         OWLOntology firstOnt = null;
-        OWLOntology secontOnt = null;
+        OWLOntology secondOnt = null;
         FileWriter output = null;
         String firstIri = "", secondIri = "", ontologyIri = "";
         GitInfoParams gitInfoParams = null;
@@ -106,7 +106,7 @@ public class ContoDiffMain {
             ontologyIri = cmd.getOptionValue(ConsoleConstants.BASE_ONTOLOGY_IRI);
 
             firstOnt = setOntology(reader, first, firstIri);
-            secontOnt = setOntology(reader, second, secondIri);
+            secondOnt = setOntology(reader, second, secondIri);
             output = new FileWriter(cmd.getOptionValue(ConsoleConstants.OUTPUT_FILE));
 
             String[] values = cmd.getOptionValues(ConsoleConstants.GIT_INFO);
@@ -129,9 +129,9 @@ public class ContoDiffMain {
 //        if (cmd.hasOption(ConsoleConstants.DIFF)) {
             DiffExecutor.getSingleton().setupRepository();
             DiffComputation computation = new DiffComputation();
-            DiffEvolutionMapping mapping = computation.computeDiff(firstOnt, secontOnt);
+            DiffEvolutionMapping mapping = computation.computeDiff(firstOnt, secondOnt);
 
-            Map<String, String> prefixes = OWLManagerCustom.getAllPrefixes(firstOnt, secontOnt);
+            Map<String, String> prefixes = OWLManagerCustom.getAllPrefixes(firstOnt, secondOnt);
             StringBuilder strPrefixBuilder = new StringBuilder();
 
             strPrefixBuilder.append("\n");

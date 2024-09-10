@@ -36,6 +36,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.search.EntitySearcher;
 import org.webdifftool.client.model.GitInfoParams;
+import org.webdifftool.client.model.OperationTypeMapper;
 import org.webdifftool.client.model.SemanticDiff;
 
 import java.io.*;
@@ -780,6 +781,7 @@ public class OWLManagerCustom {
 	}
 
 	public static String[] generateQuad(String hash, String input) {
+		input = input.replaceAll("\\[Thing, http:\\/\\/www\\.w3\\.org\\/2002\\/07\\/owl\\]", "http://www.w3.org/2002/07/owl#Thing");
 		String[] parts = input.split(" ");
 		String hashOperation = getHashOperationConcat(hash, input);
 		String result = "";
@@ -787,33 +789,8 @@ public class OWLManagerCustom {
 			 result += "<" + parts[1] + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
 					 "<http://www.w3.org/1999/02/22-rdf-syntax-ns#Property> " +
 			 		"<https://example.org/" + hashOperation + "> .";
-		} else {
+		} else if (parts.length == 4) {
 			if (parts[2].equals("<http://www.w3.org/2000/01/rdf-schema#subClassOf>")) {
-				if (parts[3].startsWith("[Thing,")) {
-					result += "<" + parts[1] + "> " + parts[2] + " <http://www.w3.org/2002/07/owl#Thing> " +
-							"<https://example.org/" + hashOperation + "> .";
-					result += "\n";
-					result += "<" + parts[1] + "> " + parts[2] + " <" + parts[5] + "> " +
-							"<https://example.org/" + hashOperation + "> .";
-				}
-				else if (parts[3].startsWith("[http")) {
-					result += "<" + parts[1] + "> " + parts[2] + " <" + parts[3].substring(1, parts[3].lastIndexOf(',')) + "> " +
-							"<https://example.org/" + hashOperation + "> .";
-					result += "\n";
-					result += "<" + parts[1] + "> " + parts[2] + " <" + parts[4].substring(0, parts[4].lastIndexOf(']'))  + "> " +
-							"<https://example.org/" + hashOperation + "> .";
-				}
-				else {
-					for (int i = 1; i < parts.length; i++) {
-						if (parts[i].startsWith("http")) {
-							result += "<" + parts[i] + "> ";
-						} else {
-							result += parts[i] + " ";
-						}
-					}
-					result += "<https://example.org/" + hashOperation + "> .";
-				}
-			} else {
 				for (int i = 1; i < parts.length; i++) {
 					if (parts[i].startsWith("http")) {
 						result += "<" + parts[i] + "> ";
@@ -822,6 +799,11 @@ public class OWLManagerCustom {
 					}
 				}
 				result += "<https://example.org/" + hashOperation + "> .";
+			}
+		}
+		else if (parts.length > 4) {
+			for (int i = 3; i < parts.length; i++) {
+				result += "<" + parts[1] + "> " + parts[2] + " <" + parts[i] + "> <https://example.org/" + hashOperation + "> .\n";
 			}
 		}
 		return result.split("\n");
@@ -848,73 +830,8 @@ public class OWLManagerCustom {
 	public static void generateActivityMap(Map<String, String> locations, Map<String, String> activities, String secondSha1) {
 		for (Map.Entry<String, String> entry : locations.entrySet()) {
 			String key = entry.getKey().substring(0, entry.getKey().lastIndexOf("_"));
-			String operationType = "";
-			if (key.endsWith("delC")) {
-				operationType = "prov:delConcept <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("addC")) {
-				operationType = "prov:addConcept <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("mapC")) {
-				operationType = "prov:mapConcept <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("addAttribute")) {
-				operationType = "prov:addAttribute <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("delA")) {
-				operationType = "prov:delAttribute <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("mapA")) {
-				operationType = "prov:mapAttribute <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("addR")) {
-				operationType = "prov:addRelationship <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("delR")) {
-				operationType = "prov:delRelationship <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("mapR")) {
-				operationType = "prov:mapRelationship <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("addLeaf")) {
-				operationType = "prov:addLeaf <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("delLeaf")) {
-				operationType = "prov:delLeaf <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("move")) {
-				operationType = "prov:move <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("addInner")) {
-				operationType = "prov:addInner <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("addSubGraph")) {
-				operationType = "prov:addSubGraph <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("delInner")) {
-				operationType = "prov:delInner <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("merge")) {
-				operationType = "prov:merge <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("split")) {
-				operationType = "prov:split <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("substitute")) {
-				operationType = "prov:substitute <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("chgAttValue")) {
-				operationType = "prov:chgAttValue <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("toObsolete")) {
-				operationType = "prov:toObsolete <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else if (key.endsWith("revokeObsolete")) {
-				operationType = "prov:revokeObsolete <https://example.org/history/" +  secondSha1 + "> ;\n\t";
-			}
-			else {
-				operationType = "Operation type was not found. Check applied rules\n\t";
-			}
+			String operationType = OperationTypeMapper.getOperationTypeByKey(key, secondSha1);
+
 			String value = ":" + key + " rdf:type owl:NamedIndividual ,\n\t " +
 					"prov:Activity ;\n\t" +
 					operationType +
@@ -1039,30 +956,6 @@ public class OWLManagerCustom {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	private static String generateRandomString() {
-		int leftLimit = 97; // letter 'a'
-		int rightLimit = 122; // letter 'z'
-		int targetStringLength = 15;
-		Random random = new Random();
-
-		return random.ints(leftLimit, rightLimit + 1)
-				.limit(targetStringLength)
-				.collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-				.toString();
-	}
-
-	public static Instant generateRandomInstant() {
-		Instant startInclusive = Instant.parse("2021-02-09T11:19:42.12Z");
-		Instant endExclusive = Instant.parse("2023-02-09T11:19:42.12Z");
-		long startSeconds = startInclusive.getEpochSecond();
-		long endSeconds = endExclusive.getEpochSecond();
-		long random = ThreadLocalRandom
-				.current()
-				.nextLong(startSeconds, endSeconds);
-
-		return Instant.ofEpochSecond(random);
 	}
 
 	private void handleSplitMappings() {
