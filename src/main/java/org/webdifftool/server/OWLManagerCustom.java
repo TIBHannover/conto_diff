@@ -442,8 +442,8 @@ public class OWLManagerCustom {
 				}*/
 				String id = owlClass.getIRI().toString();
 				ImportObj importObj = new ImportObj(id);
-				List<OWLAnnotation> annos = EntitySearcher.getAnnotations(owlClass.getIRI(),
-						ontology).collect(Collectors.toCollection(ArrayList::new));
+				List<OWLAnnotation> annos = new ArrayList<>(EntitySearcher.getAnnotations(owlClass.getIRI(),
+						ontology));
 				// get importObj (id & name)
 				for (OWLAnnotation axiom: annos){
 					String attributeName,attributeValue;
@@ -738,10 +738,10 @@ public class OWLManagerCustom {
 
 	public static Map<String, String> getAllPrefixes(OWLOntology ontologyLeft, OWLOntology ontologyRight) {
 		OWLOntologyManager managerLeft = ontologyLeft.getOWLOntologyManager();
-		OWLOntologyFormat formatLeft = managerLeft.getOntologyFormat(ontologyLeft);
+		OWLDocumentFormat formatLeft = managerLeft.getOntologyFormat(ontologyLeft);
 
 		OWLOntologyManager managerRight = ontologyRight.getOWLOntologyManager();
-		OWLOntologyFormat formatRight = managerRight.getOntologyFormat(ontologyRight);
+		OWLDocumentFormat formatRight = managerRight.getOntologyFormat(ontologyRight);
 
 		Map<String, String> mergedMap = new HashMap<>(formatLeft.asPrefixOWLOntologyFormat().getPrefixName2PrefixMap());
 
@@ -811,7 +811,7 @@ public class OWLManagerCustom {
 		return result.split("\n");
 	}
 
-	public static void getProvDmMap(String hash, String input, Map<String, String> provDmMap) {
+	public static void setProvDmMap(String hash, String input, Map<String, String> provDmMap) {
 		String[] output = generateQuad(hash, input);
 
         String stringBuilder = String.join(" ", output) + System.lineSeparator();

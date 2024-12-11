@@ -18,6 +18,7 @@
 
 package org;
 
+
 import org.apache.commons.cli.*;
 import org.gomma.diff.DiffComputation;
 import org.gomma.diff.DiffExecutor;
@@ -86,7 +87,6 @@ public class ContoDiffMain {
 
     public static void main(String[] args) throws IOException {
         CommandLine cmd = parseCommand(args);
-
         OntologyReader reader = new OntologyReader();
         OWLOntology firstOnt = null;
         OWLOntology secondOnt = null;
@@ -94,50 +94,37 @@ public class ContoDiffMain {
         String firstIri = "", secondIri = "", ontologyIri = "";
         GitInfoParams gitInfoParams = null;
         try {
-            System.out.println(cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_A));
-            System.out.println(cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_B));
+
+            String[] values = cmd.getOptionValues(ConsoleConstants.GIT_INFO);
+            gitInfoParams = new GitInfoParams(values[0], values[1],
+                    values[2], values[3],
+                    values[4], values[5],
+                    values[6], values[7]);
 
             String first = cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_A);
-            firstIri = cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_A_IRI);
-
             String second = cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_B);
-            secondIri = cmd.getOptionValue(ConsoleConstants.INPUT_ONTOLOGY_B_IRI);
+            firstIri = gitInfoParams.getRawUrlLeft();
+
+            secondIri = gitInfoParams.getRawUrlRight();
 
             ontologyIri = cmd.getOptionValue(ConsoleConstants.BASE_ONTOLOGY_IRI);
 
-            firstOnt = setOntology(reader, first, firstIri);
-            secondOnt = setOntology(reader, second, secondIri);
+            firstOnt = setOntology(reader, first, null);
+            secondOnt = setOntology(reader, second, null);
             output = new FileWriter(cmd.getOptionValue(ConsoleConstants.OUTPUT_FILE));
-
-            String[] values = cmd.getOptionValues(ConsoleConstants.GIT_INFO);
-
-            gitInfoParams = new GitInfoParams(values[0], values[1],
-                                                values[2], values[3],
-                                                values[4], values[5],
-                                                values[6], values[7]);
-
-        } catch (NullPointerException e) {
-
-            System.err.println("first or second ontology not found");
-            e.printStackTrace();
         } catch (OWLOntologyCreationException e) {
-            e.printStackTrace();
-            System.exit(1);
-        } catch (IOException e) {
-            e.printStackTrace();
+            System.exit(10);
         }
-        System.out.println("load ontology "+ firstOnt.getClassesInSignature().size());
-//        if (cmd.hasOption(ConsoleConstants.DIFF)) {
+
             DiffExecutor.getSingleton().setupRepository();
             DiffComputation computation = new DiffComputation();
             DiffEvolutionMapping mapping = computation.computeDiff(firstOnt, secondOnt);
-
             Map<String, String> prefixes = OWLManagerCustom.getAllPrefixes(firstOnt, secondOnt);
 
             SemanticDiff sdiff = new SemanticDiff();
 
             for (Map.Entry<String, Change> change : mapping.allChanges.entrySet()) {
-                OWLManagerCustom.getProvDmMap(change.getKey(), change.getValue().getSimpleWordRepresentation().trim(), sdiff.getProvDMs());
+                OWLManagerCustom.setProvDmMap(change.getKey(), change.getValue().getSimpleWordRepresentation().trim(), sdiff.getProvDMs());
             }
 
             OWLManagerCustom.generateLocationMap(sdiff.getProvDMs(), sdiff.getLocations());
@@ -195,14 +182,14 @@ public class ContoDiffMain {
             }
             Files.write(Paths.get("all_diffs.nq"), diffs.toString().getBytes(StandardCharsets.UTF_8));
             output.close();
-//        }
+
 
     }
 
 
-    private static OWLOntology setOntology(OntologyReader reader, String file, String iri) throws IllegalArgumentException, OWLOntologyCreationException {
+    public static OWLOntology setOntology(OntologyReader reader, String file, String iri) throws IllegalArgumentException, OWLOntologyCreationException {
         if (file != null && iri != null) {
-            throw new IllegalArgumentException("Path and IRI provided at the same time!");
+            throw new IllegalArgumentException("File and IRI are provided at the same time!");
         }
         else if (file != null) {
             return reader.loadOntology(new File(file));

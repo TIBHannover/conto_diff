@@ -435,8 +435,8 @@ public class OWLManager {
 				}*/
 				String id = owlClass.getIRI().getFragment();
 				ImportObj importObj = new ImportObj(id);
-				List<OWLAnnotation> annos = EntitySearcher.getAnnotations(owlClass.getIRI(),
-						ontology).collect(Collectors.toCollection(ArrayList::new));
+				List<OWLAnnotation> annos = new ArrayList<>(EntitySearcher.getAnnotations(owlClass.getIRI(),
+						ontology));
 				// get importObj (id & name)
 				for (OWLAnnotation axiom: annos){
 					String attributeName,attributeValue;
