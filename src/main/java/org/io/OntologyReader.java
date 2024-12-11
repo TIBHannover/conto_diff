@@ -19,6 +19,8 @@
 package org.io;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.io.FileDocumentSource;
+import org.semanticweb.owlapi.io.IRIDocumentSource;
 import org.semanticweb.owlapi.model.*;
 
 import java.io.File;
@@ -36,11 +38,27 @@ public class OntologyReader {
 
     public OWLOntology loadOntology(File f) throws OWLOntologyCreationException {
         manager = OWLManager.createOWLOntologyManager();
-        return manager.loadOntologyFromOntologyDocument(f);
+        OWLOntologyLoaderConfiguration loaderConfig = new OWLOntologyLoaderConfiguration()
+                .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
+        FileDocumentSource source = new FileDocumentSource(f);
+        return manager.loadOntologyFromOntologyDocument(source, loaderConfig);
     }
+
+//    public OWLOntology loadOntology(File f) throws OWLOntologyCreationException {
+//        manager = OWLManager.createOWLOntologyManager();
+//        return manager.loadOntologyFromOntologyDocument(f);
+//    }
 
     public OWLOntology loadOntology(IRI iri) throws OWLOntologyCreationException {
         manager = OWLManager.createOWLOntologyManager();
-        return manager.loadOntology(iri);
+        OWLOntologyLoaderConfiguration loaderConfig = new OWLOntologyLoaderConfiguration()
+                .setMissingImportHandlingStrategy(MissingImportHandlingStrategy.SILENT);
+        IRIDocumentSource source = new IRIDocumentSource(iri);
+        return manager.loadOntologyFromOntologyDocument(source, loaderConfig);
     }
+
+//    public OWLOntology loadOntology(IRI iri) throws OWLOntologyCreationException {
+//        manager = OWLManager.createOWLOntologyManager();
+//        return manager.loadOntology(iri);
+//    }
 }

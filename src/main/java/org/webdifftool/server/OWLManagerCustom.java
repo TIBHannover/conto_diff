@@ -442,8 +442,15 @@ public class OWLManagerCustom {
 				}*/
 				String id = owlClass.getIRI().toString();
 				ImportObj importObj = new ImportObj(id);
+
+//				for OWL-API version 4.x
 				List<OWLAnnotation> annos = new ArrayList<>(EntitySearcher.getAnnotations(owlClass.getIRI(),
 						ontology));
+
+//								for OWL-API version 5.x
+//				List<OWLAnnotation> annos = EntitySearcher.getAnnotations(owlClass.getIRI(),
+//						ontology).collect(Collectors.toCollection(ArrayList::new));
+
 				// get importObj (id & name)
 				for (OWLAnnotation axiom: annos){
 					String attributeName,attributeValue;
@@ -743,13 +750,22 @@ public class OWLManagerCustom {
 		OWLOntologyManager managerRight = ontologyRight.getOWLOntologyManager();
 		OWLDocumentFormat formatRight = managerRight.getOntologyFormat(ontologyRight);
 
+//		for OWL-API version 4.x
 		Map<String, String> mergedMap = new HashMap<>(formatLeft.asPrefixOWLOntologyFormat().getPrefixName2PrefixMap());
+
+//				for OWL-API version 5.x
+//		Map<String, String> mergedMap = new HashMap<>(formatLeft.asPrefixOWLDocumentFormat().getPrefixName2PrefixMap());
 
 		mergedMap.put("prov:", "http://www.w3.org/ns/prov#");
 		mergedMap.put("rdf:", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
 		mergedMap.put("rdfs:", "http://www.w3.org/2000/01/rdf-schema#");
 		mergedMap.put("owl:", "http://www.w3.org/2002/07/owl#");
+
+		//		for OWL-API version 4.x
         mergedMap.putAll(formatRight.asPrefixOWLOntologyFormat().getPrefixName2PrefixMap());
+
+//						for OWL-API version 5.x
+//		mergedMap.putAll(formatRight.asPrefixOWLDocumentFormat().getPrefixName2PrefixMap());
 
 		return mergedMap;
 	}
