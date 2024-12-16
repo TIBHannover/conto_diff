@@ -65,15 +65,11 @@
             <groupId>Gomma</groupId>
             <artifactId>gomma_enhanced_diff</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/enhanced_diff.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>Gomma</groupId>
             <artifactId>gomma_kernel</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/gomma-kernel.jar</systemPath>
         </dependency>
 <!--        <dependency>-->
 <!--            <groupId>Gomma</groupId>-->

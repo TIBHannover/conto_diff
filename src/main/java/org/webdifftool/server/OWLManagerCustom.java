@@ -35,19 +35,15 @@ import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.search.EntitySearcher;
-import org.webdifftool.client.model.GitInfoParams;
+import org.webdifftool.client.model.DiffContext;
 import org.webdifftool.client.model.OperationTypeMapper;
-import org.webdifftool.client.model.SemanticDiff;
 
 import java.io.*;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.time.Instant;
 
 import static org.ContoDiffMain.getSha1FromIri;
 
@@ -909,7 +905,7 @@ public class OWLManagerCustom {
 	}
 
 	public static void generateSDiffEntity(Map<String, String> sourceEntities, String firstSha1, String secondSha1, Map<String, String> sdiffEntities,
-										   String baseEntity, GitInfoParams gitInfoParams) {
+										   String baseEntity, DiffContext diffContext) {
 		for (Map.Entry<String, String> entry : sourceEntities.entrySet()) {
 
 			Pattern pattern = Pattern.compile("[0-9a-f]{40}");
@@ -933,16 +929,16 @@ public class OWLManagerCustom {
 					"prov:alternateOf :" + baseEntityLabel + " ;\n\t" +
 					"prov:hadPrimarySource " + entry.getKey() + " ;\n\t";
 			if (sha1.equals(firstSha1)) {
-				value += "prov:generatedAtTime \"" + gitInfoParams.getLeftDatetime() + "\"^^xsd:dateTime ;\n\t" +
-					"prov:value \"" + gitInfoParams.getLeftMessage() +  "\" ;\n\t" +
+				value += "prov:generatedAtTime \"" + diffContext.getLeftDatetime() + "\"^^xsd:dateTime ;\n\t" +
+					"prov:value \"" + diffContext.getLeftMessage() +  "\" ;\n\t" +
 					"rdfs:label \"" + sha1 + "\" ;\n\t" +
-					"rdfs:seeAlso <" + gitInfoParams.getLeftCommitUri() + "> .\n\t";
+					"rdfs:seeAlso <" + diffContext.getLeftCommitUri() + "> .\n\t";
 			} else if (sha1.equals(secondSha1)) {
 				value += "prov:wasRevisionOf " + "<https://example.org/history/" + firstSha1 + ">" + " ; \n\t" +
-						"prov:generatedAtTime \"" + gitInfoParams.getRightDatetime() + "\"^^xsd:dateTime ;\n\t" +
-						"prov:value \"" + gitInfoParams.getRightMessage() +  "\" ;\n\t" +
+						"prov:generatedAtTime \"" + diffContext.getRightDatetime() + "\"^^xsd:dateTime ;\n\t" +
+						"prov:value \"" + diffContext.getRightMessage() +  "\" ;\n\t" +
 						"rdfs:label \"" + sha1 + "\" ;\n\t" +
-						"rdfs:seeAlso <" + gitInfoParams.getRightCommitUri() + "> .\n\t";
+						"rdfs:seeAlso <" + diffContext.getRightCommitUri() + "> .\n\t";
 			}
 
 			sdiffEntities.put(key, value);
@@ -954,18 +950,6 @@ public class OWLManagerCustom {
 				"prov:SoftwareAgent ;\n\t" +
 				"rdfs:comment \"contodiff\" ;\n\t" +
 				"prov:dm <https://github.com/dbs-leipzig/conto_diff> .\n\n";
-	}
-
-	public static void writeSemanticDiffToFile(SemanticDiff semanticDiff, String filePath) {
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-		try (FileWriter writer = new FileWriter(filePath)) {
-			String json = gson.toJson(semanticDiff);
-
-			writer.write(json);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	private void handleSplitMappings() {
