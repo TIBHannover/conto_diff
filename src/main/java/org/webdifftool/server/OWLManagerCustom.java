@@ -39,11 +39,13 @@ import org.webdifftool.client.model.DiffContext;
 import org.webdifftool.client.model.OperationTypeMapper;
 
 import java.io.*;
+import java.net.URL;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.ContoDiffMain.getSha1FromIri;
 
@@ -796,7 +798,19 @@ public class OWLManagerCustom {
 		return hash + "_" + parts[0];
 	}
 
-	public static String[] generateQuad(String hash, String input) {
+	private static boolean isValidIRI(String input) {
+		String[] parts = input.split(" ");
+		try {
+			for (int i = 0; i < parts.length - 1; i++) {
+				new URL(parts[i].substring(parts[i].indexOf("<") + 1, parts[i].lastIndexOf(">"))).toURI();
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	public static List<String> generateQuad(String hash, String input) {
 		input = input.replaceAll("\\[Thing, http:\\/\\/www\\.w3\\.org\\/2002\\/07\\/owl\\]", "http://www.w3.org/2002/07/owl#Thing");
 		String[] parts = input.split(" ");
 		String hashOperation = getHashOperationConcat(hash, input);
@@ -822,11 +836,14 @@ public class OWLManagerCustom {
 				result += "<" + parts[1] + "> " + parts[2] + " <" + parts[i] + "> <https://example.org/" + hashOperation + "> .\n";
 			}
 		}
-		return result.split("\n");
+		String[] res = result.split("\n");
+		return Arrays.stream(res)
+				.filter(OWLManagerCustom::isValidIRI)
+				.collect(Collectors.toList());
 	}
 
 	public static void setProvDmMap(String hash, String input, Map<String, String> provDmMap) {
-		String[] output = generateQuad(hash, input);
+		List<String> output = generateQuad(hash, input);
 
         String stringBuilder = String.join(" ", output) + System.lineSeparator();
 		provDmMap.put(getHashOperationConcat(hash, input), stringBuilder);
