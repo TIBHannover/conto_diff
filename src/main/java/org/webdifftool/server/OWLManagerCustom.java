@@ -911,7 +911,7 @@ public class OWLManagerCustom {
 			label.deleteCharAt(label.length() - 1);
 		}
 
-		baseEntity.append(":").append(label);
+		baseEntity.append("<").append(ontologyUri).append(">");
 		baseEntity.append(" rdf:type owl:NamedIndividual ,");
 		baseEntity.append(System.lineSeparator());
 		baseEntity.append("                                prov:Entity ;");
@@ -965,7 +965,7 @@ public class OWLManagerCustom {
 	}
 
 	public static String generateSoftwareAgent() {
-		return ":contodiff rdf:type owl:NamedIndividual ,\n\t" +
+		return "<https://github.com/dbs-leipzig/conto_diff> rdf:type owl:NamedIndividual ,\n\t" +
 				"prov:SoftwareAgent ;\n\t" +
 				"rdfs:comment \"contodiff\" ;\n\t" +
 				"prov:dm <https://github.com/dbs-leipzig/conto_diff> .\n\n";

@@ -31,10 +31,7 @@ public class OntologyReader {
     OWLOntologyManager manager;
 
 
-    public OntologyReader(){
-
-
-    }
+    public OntologyReader(){}
 
     public OWLOntology loadOntology(File f) throws OWLOntologyCreationException {
         manager = OWLManager.createOWLOntologyManager();
