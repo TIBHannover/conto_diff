@@ -945,7 +945,7 @@ public class OWLManagerCustom {
 
 			String value = key + "> rdf:type owl:NamedIndividual ,\n\t " +
 					"prov:Entity ;\n\t" +
-					"prov:alternateOf :" + baseEntity + " ;\n\t" +
+					"prov:alternateOf <" + baseEntity + "> ;\n\t" +
 					"prov:hadPrimarySource " + entry.getKey() + " ;\n\t";
 			if (sha1.equals(firstSha1)) {
 				value += "prov:generatedAtTime \"" + diffContext.getLeftDatetime() + "\"^^xsd:dateTime ;\n\t" +
