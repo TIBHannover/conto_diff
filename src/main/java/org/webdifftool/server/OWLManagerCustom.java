@@ -934,18 +934,18 @@ public class OWLManagerCustom {
 				sha1 = matcher.group(0);
 			}
 
-			String baseEntityLabel = "label_not_found";
-			Pattern baseEntityPattern = Pattern.compile("rdfs:label \"(.*?)\"");
-			Matcher baseEntityMatcher = baseEntityPattern.matcher(baseEntity);
-			if (baseEntityMatcher.find()) {
-				baseEntityLabel = baseEntityMatcher.group(1);
-			}
+//			String baseEntityLabel = "label_not_found";
+//			Pattern baseEntityPattern = Pattern.compile("rdfs:label \"(.*?)\"");
+//			Matcher baseEntityMatcher = baseEntityPattern.matcher(baseEntity);
+//			if (baseEntityMatcher.find()) {
+//				baseEntityLabel = baseEntityMatcher.group(1);
+//			}
 
 			String key = entry.getKey().substring(0, entry.getKey().lastIndexOf("_"));
 
 			String value = key + "> rdf:type owl:NamedIndividual ,\n\t " +
 					"prov:Entity ;\n\t" +
-					"prov:alternateOf :" + baseEntityLabel + " ;\n\t" +
+					"prov:alternateOf :" + baseEntity + " ;\n\t" +
 					"prov:hadPrimarySource " + entry.getKey() + " ;\n\t";
 			if (sha1.equals(firstSha1)) {
 				value += "prov:generatedAtTime \"" + diffContext.getLeftDatetime() + "\"^^xsd:dateTime ;\n\t" +

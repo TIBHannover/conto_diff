@@ -130,7 +130,7 @@ public class ContoDiffMain {
 
         String firstSha1 = getSha1FromIri(diffContext.getLeftCommitUri());
 
-        OWLManagerCustom.generateSDiffEntity(sdiff.getSourceEntities(), firstSha1, secondSha1, sdiff.getSdiffEntities(), sdiff.getBaseEntity(), diffContext);
+        OWLManagerCustom.generateSDiffEntity(sdiff.getSourceEntities(), firstSha1, secondSha1, sdiff.getSdiffEntities(), ontologyIri, diffContext);
 
         StringBuilder sb = new StringBuilder();
 
