@@ -853,7 +853,7 @@ public class OWLManagerCustom {
 	public static void generateLocationMap(Map<String, String> provDmMap, Map<String, String> locations) {
 		for (Map.Entry<String, String> entry : provDmMap.entrySet()) {
 			String key = entry.getKey() + "_location";
-			String value = ":" + entry.getKey() + "_location" + " rdf:type owl:NamedIndividual ,\n\t prov:Location ;\n\t" +
+			String value = "<https://example.org/history/" + entry.getKey() + "_location" + "> rdf:type owl:NamedIndividual ,\n\t prov:Location ;\n\t" +
 					" rdfs:label \"" + entry.getKey() + "_location" + "\" ;\n\t" +
 					" prov:dm <https://example.org/" + entry.getKey() + "> .\n\n";
 			locations.put(key, value);
@@ -865,11 +865,11 @@ public class OWLManagerCustom {
 			String key = entry.getKey().substring(0, entry.getKey().lastIndexOf("_"));
 			String operationType = OperationTypeMapper.getOperationTypeByKey(key, secondSha1);
 
-			String value = ":" + key + " rdf:type owl:NamedIndividual ,\n\t " +
+			String value = "<https://example.org/history/" + key + "> rdf:type owl:NamedIndividual ,\n\t " +
 					"prov:Activity ;\n\t" +
 					operationType +
-					"prov:atLocation :" + entry.getKey() + ";\n\t" +
-					"prov:wasAssociatedWith :contodiff ;\n\t" +
+					"prov:atLocation <https://example.org/history/" + entry.getKey() + "> ;\n\t" +
+					"prov:wasAssociatedWith <https://github.com/dbs-leipzig/conto_diff> ;\n\t" +
 					" rdfs:label \"" + key + "\" ;\n\t" +
 					" prov:dm <https://example.org/" + key + "> .\n\n";
 			activities.put(key, value);
